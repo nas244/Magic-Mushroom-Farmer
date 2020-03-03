@@ -10,7 +10,7 @@ require "libs.useful"
 --  Width/height are BEFORE scaling
 window = {
   width = 1280,
-  height = 720,
+  height = 672,
   scale = 1
 }
 
@@ -132,6 +132,7 @@ function love.update(dt)
   --   Love2D won't call love.mousemoved, so the fast movement
   --   will remain as the last move indefinitely
   mouse.x, mouse.y = 0, 0
+  --Canvas:clear()
 end
 
 function love.draw(dt)
