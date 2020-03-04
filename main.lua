@@ -105,14 +105,19 @@ function love.update(dt)
   actions.pause = keyp.p or keyp.escape
   actions.start = keyp["return"] or keyp.kpenter or keyp.space
   
+  actions.seed = keyp.a
+  actions.water = keyp.s
+  actions.fertilize = keyp.d
+  actions.till = keyp.f
+  
   -- Up/Down measurement
   --  0 is none, 1 is down, -1 is up
-  actions.up = keyp.w or keyp.up
-  actions.down = keyp.s or keyp.down
+  --actions.up = keyp.w or keyp.up
+  --actions.down = keyp.s or keyp.down
   actions.UD = bti(actions.down) - bti(actions.up)
   
-  actions.left = keyp.a or keyp.left
-  actions.right = keyp.d or keyp.right
+  --actions.left = keyp.a or keyp.left
+  --actions.right = keyp.d or keyp.right
   actions.LR = bti(actions.right) - bti(actions.left)
   
   actions.skip = #keys(keyp) > 0
