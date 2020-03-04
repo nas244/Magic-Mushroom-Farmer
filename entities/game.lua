@@ -29,6 +29,12 @@ ferttile = {
 	lotsfert = love.graphics.newImage("assets/fert/lotfert.png"),
 }
 
+myceltiles = {
+	babymycel = love.graphics.newImage("assets/mycellium/baby.png"),
+	teenmycel = love.graphics.newImage("assets/mycellium/teenager.png"),
+	adultmycel = love.graphics.newImage("assets/mycellium/adult.png"),
+}
+
 field={}
 
 game={
@@ -93,18 +99,18 @@ game={
 				end
 				if x-1>=1 and x%41~=0 then
 					spread = spread + field[x-1].myc
-					exchange = (field[x-1].water-field[x].water)*.0001
+					exchange = (field[x-1].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
 					field[x-1].water = -exchange + field[x-1].water
 				end
 				if x+41<=901 then
 					spread = spread + field[x+41].myc
-					exchange = (field[x+41].water-field[x].water)*.0001
+					exchange = (field[x+41].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
 					field[x+41].water = -exchange + field[x+41].water
 				if x-41>=1 then
 					spread = spread + field[x-41].myc
-					exchange = (field[x-41].water-field[x].water)*.0001
+					exchange = (field[x-41].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
 					field[x-41].water = -exchange + field[x-41].water
 				end
@@ -129,7 +135,7 @@ game={
 				field[x].fert = field[x].fert - diff
 			end
 			if field[x].water > -0.25 then
-				field[x].water = field[x].water - .0001
+				field[x].water = field[x].water - .00001
 				if field[x].water < -0.25 then
 					field[x].water = -0.25
 				elseif field[x].water > 1.0 then
@@ -237,6 +243,13 @@ game={
                 		--print(field[n].fert)
                 	end
 
+                	if field[n].myc > 90 then
+                		love.graphics.draw(myceltiles.adultmycel,x,y)
+                	elseif field[n].myc > 50 then
+                		love.graphics.draw(myceltiles.teenmycel,x,y)
+                	elseif field[n].myc > 10 then
+                		love.graphics.draw(myceltiles.babymycel,x,y)
+                	end
             	end
         	end
     	end
