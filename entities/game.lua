@@ -41,7 +41,7 @@ game={
 				if y%32 == 0 and x%32 == 0 then
 					n=n+1
 					ogfert=love.math.random(1,10)/10
-					print(ogfert)
+					--print(ogfert)
 					field[n]={myc = 0, nummush = 0, actionrdy = 0, fert = ogfert, soilqual = 0, water = love.math.random(.1,.5), ogfert = ogfert}
 					self.rnd = love.math.random(3)
 					if self.rnd == 1 then
@@ -189,7 +189,7 @@ game={
                 	--print(field[n].soilqual)
                 	if field[n].soilqual == 1 then
                 		if field[n].water <= 0 then
-                			love.graphics.draw(farmtile.drytilledfarm,x,y)
+                			love.graphics.draw(farmtile.drytillfarm,x,y)
                 		elseif field[n].water < 0.3 then
                 			love.graphics.draw(farmtile.tillfarm,x,y)
                 		elseif field[n].water < 0.6 then
