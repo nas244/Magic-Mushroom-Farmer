@@ -1,6 +1,8 @@
---Class = require "libs.hump.class"
+Class = require "libs.hump.class"
 Vector = require "libs.hump.vector"
 --GS = require "libs.hump.gamestate"
+
+sidebar = require "entities.sidemenu"
 
 claytiles = {
 	dryclay = love.graphics.newImage("assets/clay/dryclayfarm.png"),
@@ -35,20 +37,34 @@ myceltiles = {
 	adultmycel = love.graphics.newImage("assets/mycellium/adult.png"),
 }
 
+mushtiles = {
+	babymush = love.graphics.newImage("assets/mycellium/babymushroom.png"),
+	teenmush = love.graphics.newImage("assets/mycellium/teenmushroom.png"),
+	adultmush = love.graphics.newImage("assets/mycellium/adultmushroom.png"),
+}
+
+sidebar = {
+	bar = love.graphics.newImage("assets/menu/sidebar.png")
+}
+
 field={}
+
+mytimer = 0
 
 game={
 	enter = function(self)
 		self.paused = false
 		n = 0
 		self.mouseaction = 1
+
+		--Sidebar = sidebar()
 		for y=0, window.height do
 			for x=0, window.width do
-				if y%32 == 0 and x%32 == 0 then
+				if y%32 == 0 and x%32 == 0 and x< 992 then
 					n=n+1
 					ogfert=love.math.random(1,10)/10
 					--print(ogfert)
-					field[n]={myc = 0, nummush = 0, actionrdy = 0, fert = ogfert, soilqual = 0, water = love.math.random(.1,.5), ogfert = ogfert}
+					field[n]={myc = 0, nummush = 0, actionrdy = 0, fert = ogfert, soilqual = 0, water = love.math.random(.1,.5), ogfert = ogfert, mushroom = {}}
 					self.rnd = love.math.random(3)
 					if self.rnd == 1 then
 						field[n].soilqual=.5
@@ -60,17 +76,17 @@ game={
 				end
 			end
 		end
-
+		print(n)
 	end,
 
 	leave=function (self)
 		
 	end,
 
-	update = function (self)
+	update = function (self,dt)
 		local mx,my = love.mouse.getPosition()
     	local mouseB = keyp.mouse1
-
+    	
     	
     	if actions.seed then
     		self.mouseaction = 1
@@ -80,39 +96,43 @@ game={
     		self.mouseaction = 3
     	elseif actions.till then
     		self.mouseaction = 4 
+    	elseif actions.info then
+    		self.mouseaction = 5
+    	elseif actions.harvest then
+    		self.mouseaction = 6
     	end
 
-		for x=1,901 do
+		for x=1,651 do
 			spread = 0
 			waterdrain = 0
 			--print(field[x].myc)
 			--print(field[x].nummush)
 			--print(field[x].actionrdy)
-
+			
 			--calculate neighbors effect on spread
 			if field[x].myc<100 then
-				if x+1<=901 and (x+1)%41~=0 then
+				if x+1<=901 and (x+1)%31~=0 then
 					spread = spread + field[x+1].myc
 					exchange = (field[x+1].water-field[x].water)*.0001
 					field[x].water = exchange + field [x].water
 					field[x+1].water = -exchange + field[x+1].water
 				end
-				if x-1>=1 and x%41~=0 then
+				if x-1>=1 and x%31~=0 then
 					spread = spread + field[x-1].myc
 					exchange = (field[x-1].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
 					field[x-1].water = -exchange + field[x-1].water
 				end
-				if x+41<=901 then
-					spread = spread + field[x+41].myc
-					exchange = (field[x+41].water-field[x].water)*.00001
+				if x+31<=901 then
+					spread = spread + field[x+31].myc
+					exchange = (field[x+31].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
-					field[x+41].water = -exchange + field[x+41].water
-				if x-41>=1 then
-					spread = spread + field[x-41].myc
-					exchange = (field[x-41].water-field[x].water)*.00001
+					field[x+31].water = -exchange + field[x+31].water
+				if x-31>=1 then
+					spread = spread + field[x-31].myc
+					exchange = (field[x-31].water-field[x].water)*.00001
 					field[x].water = exchange + field [x].water
-					field[x-41].water = -exchange + field[x-41].water
+					field[x-31].water = -exchange + field[x-31].water
 				end
 			elseif field[x].myc > 100 then
 				field[x].myc=100
@@ -143,6 +163,8 @@ game={
 				end
 			end
 
+			
+			
 
 
 			
@@ -150,8 +172,49 @@ game={
 
 		end
 
-		if mouseB then
-			fieldindex=(math.floor(my/32))*41+(math.floor(mx/32)+1)
+		for x=1,651 do
+			if field[x].myc >= 90 and field[x].nummush == 0 then
+				chance = love.math.random(1000000)
+				--print(chance)
+				if chance == 1 then
+					mushnum = love.math.random(10)
+					if mushnum > 9 then
+						field[x].nummush = 3
+						m = 3
+					elseif mushnum > 5 then
+						field[x].nummush = 2
+						m = 2
+					else
+						field[x].nummush = 1
+						m = 1
+					end
+
+					for k=1,m do
+					 	field[x].mushroom[k] = {growth = 1}
+					end
+					 
+				end
+			end
+			if field[x].nummush > 0 then
+				for k=1, field[x].nummush do
+					if field[x].mushroom[k].growth < 100 then
+						growthfactor = love.math.random(10)/1000
+						field[x].mushroom[k].growth = field[x].mushroom[k].growth + .01*field[x].fert*field[x].water*field[x].soilqual *growthfactor
+						field[x].fert = field[x].fert - 0.000000001
+						field[x].water = field[x].water -0.000000001 
+					elseif field[x].mushroom[k].growth > 100 then
+						field[x].mushroom[k].growth = 100
+					end
+					--print(field[x].mushroom[k].growth)
+				end
+			end
+		end
+		
+		mytimer=mytimer + dt
+
+		if mouseB and mytimer > 0.2 then
+			fieldindex=(math.floor(my/32))*31+(math.floor(mx/32)+1)
+			mytimer = 0
 			if self.mouseaction == 1 then
 				field[fieldindex].myc = 100
 			elseif self.mouseaction == 3 then
@@ -167,6 +230,12 @@ game={
 				elseif field[fieldindex].soilqual == 0.5 then
 					field[fieldindex].soilqual = .7
 				end
+			elseif self.mouseaction == 5 then
+				print(field[fieldindex].nummush)
+			elseif self.mouseaction == 6 then
+				score=score + field[fieldindex].nummush
+				field[fieldindex].nummush=0
+				field[fieldindex].mushroom={}
 			end
 		end
 	end
@@ -179,10 +248,11 @@ game={
 		love.graphics.scale(window.width)
 		--print("draw")
 		love.graphics.origin()
+		love.graphics.draw(sidebar.bar,992,1)
 		n = 0
 		for y=0, window.height do
         	for x=0, window.width do
-            	if y%32 == 0 and x%32==0 then
+            	if y%32 == 0 and x%32==0 and x < 992 then
             		n=n+1
             		love.graphics.setColor(1,1,1,0.9)
                 	love.graphics.rectangle("line", x, y, 32, 32)
@@ -250,8 +320,44 @@ game={
                 	elseif field[n].myc > 10 then
                 		love.graphics.draw(myceltiles.babymycel,x,y)
                 	end
+
+                	m = field[n].nummush
+                	--postionplace = {{8,8},{0,0,16,16},{0,0,16,0,8,16}}
+                	if field[n].nummush > 0 then
+                		for k=1, m do
+                			if field[n].mushroom[k].growth < 20 then
+                				if k == 1 then
+                					love.graphics.draw(mushtiles.babymush,x,y)
+                				elseif k == 2 then
+                					love.graphics.draw(mushtiles.babymush,x+16,y)
+                				elseif k == 3 then
+                					love.graphics.draw(mushtiles.babymush,x+8,y+16)
+                				end
+                				--print(field[n].mushroom[k].growth)
+                			elseif field[n].mushroom[k].growth < 60 then
+                				if k == 1 then
+                					love.graphics.draw(mushtiles.teenmush,x,y)
+                				elseif k == 2 then
+                					love.graphics.draw(mushtiles.teenmush,x+16,y)
+                				elseif k == 3 then
+                					love.graphics.draw(mushtiles.teenmush,x+8,y+16)
+                				end
+                			elseif field[n].mushroom[k].growth <= 100 then
+                				if k == 1 then
+                					love.graphics.draw(mushtiles.adultmush,x,y)
+                				elseif key == 2 then
+                					love.graphics.draw(mushtiles.adultmush,x+16,y)
+                				elseif k == 3 then
+                					love.graphics.draw(mushtiles.adultmush,x+8,y+16)
+                				end
+                			end
+                		end	
+                	end
+
+
             	end
         	end
+    	--Sidebar:draw()
     	end
 
     end

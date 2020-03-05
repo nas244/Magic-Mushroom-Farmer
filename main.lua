@@ -98,8 +98,18 @@ function love.load()
   GS.switch(game)
 end
 
+score=0
+
+myTimer=0
+
 function love.update(dt)
   gameTime = gameTime + 1
+
+  myTimer=myTimer+dt
+  if myTimer > 5 then 
+  	print(score) 
+  	myTimer=myTimer-2
+  end
   
   -- Actions
   actions.pause = keyp.p or keyp.escape
@@ -109,6 +119,8 @@ function love.update(dt)
   actions.water = keyp.s
   actions.fertilize = keyp.d
   actions.till = keyp.f
+  actions.info = keyp.g
+  actions.harvest = keyp.h
   
   -- Up/Down measurement
   --  0 is none, 1 is down, -1 is up
