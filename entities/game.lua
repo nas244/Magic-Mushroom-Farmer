@@ -44,7 +44,11 @@ mushtiles = {
 }
 
 sidebar = {
-	bar = love.graphics.newImage("assets/menu/sidebar.png")
+	bar = love.graphics.newImage("assets/menu/sidebar.png"),
+	sythe = love.graphics.newImage("assets/tools/sythe.png"),
+	hoe = love.graphics.newImage("assets/tools/hoe.png"),
+	fertbag = love.graphics.newImage("assets/tools/fertbag.png"),
+	bucket = love.graphics.newImage("assets/tools/bucket.png"),
 }
 
 field={}
@@ -249,6 +253,10 @@ game={
 		--print("draw")
 		love.graphics.origin()
 		love.graphics.draw(sidebar.bar,992,1)
+		love.graphics.draw(sidebar.hoe,992+144-64,220)
+		love.graphics.draw(sidebar.sythe,992+144,220)
+		love.graphics.draw(sidebar.fertbag,992+144-64,220+64)
+		love.graphics.draw(sidebar.bucket,992+144,220+64)
 		n = 0
 		for y=0, window.height do
         	for x=0, window.width do
