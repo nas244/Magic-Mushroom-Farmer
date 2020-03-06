@@ -35,6 +35,7 @@ myceltiles = {
 	babymycel = love.graphics.newImage("assets/mycellium/baby.png"),
 	teenmycel = love.graphics.newImage("assets/mycellium/teenager.png"),
 	adultmycel = love.graphics.newImage("assets/mycellium/adult.png"),
+	grownmycel = love.graphics.newImage("assets/mycellium/adultgrown.png")
 }
 
 mushtiles = {
@@ -51,15 +52,33 @@ sidebar = {
 	bucket = love.graphics.newImage("assets/tools/bucket.png"),
 }
 
+audio = {
+	sythesound = love.audio.newSource("assets/audio/sythe.mp3","static"),
+	bucketsound = love.audio.newSource("assets/audio/bucket.mp3","static"),
+	fertsound = love.audio.newSource("assets/audio/fert.mp3","static"),
+	hoesound = love.audio.newSource("assets/audio/dig.mp3","static")
+}
+
+
 field={}
 
 mytimer = 0
+
+
 
 game={
 	enter = function(self)
 		self.paused = false
 		n = 0
 		self.mouseaction = 1
+		fertcursor = love.mouse.newCursor("assets/tools/fertbag.png",32,32)
+		watercursor = love.mouse.newCursor("assets/tools/bucket.png",32,32)
+		hoecursor = love.mouse.newCursor("assets/tools/hoe.png",32,32)
+		sythecursor = love.mouse.newCursor("assets/tools/sythe.png",32,32)
+		waternum = 9
+		fertnum = 9
+		seeds = 1
+		pastgametime = 0
 
 		--Sidebar = sidebar()
 		for y=0, window.height do
@@ -94,16 +113,21 @@ game={
     	
     	if actions.seed then
     		self.mouseaction = 1
+    		love.mouse.setCursor()
     	elseif actions.water then
     		self.mouseaction = 2
+    		love.mouse.setCursor(watercursor)
     	elseif actions.fertilize then
     		self.mouseaction = 3
+    		love.mouse.setCursor(fertcursor)
     	elseif actions.till then
     		self.mouseaction = 4 
+    		love.mouse.setCursor(hoecursor)
     	elseif actions.info then
     		self.mouseaction = 5
     	elseif actions.harvest then
     		self.mouseaction = 6
+    		love.mouse.setCursor(sythecursor)
     	end
 
 		for x=1,651 do
@@ -203,7 +227,7 @@ game={
 				for k=1, field[x].nummush do
 					if field[x].mushroom[k].growth < 100 then
 						growthfactor = love.math.random(10)/1000
-						field[x].mushroom[k].growth = field[x].mushroom[k].growth + .01*field[x].fert*field[x].water*field[x].soilqual *growthfactor
+						field[x].mushroom[k].growth = field[x].mushroom[k].growth + .05*field[x].fert*field[x].water*field[x].soilqual *growthfactor
 						field[x].fert = field[x].fert - 0.000000001
 						field[x].water = field[x].water -0.000000001 
 					elseif field[x].mushroom[k].growth > 100 then
@@ -216,30 +240,74 @@ game={
 		
 		mytimer=mytimer + dt
 
-		if mouseB and mytimer > 0.2 then
-			fieldindex=(math.floor(my/32))*31+(math.floor(mx/32)+1)
-			mytimer = 0
-			if self.mouseaction == 1 then
-				field[fieldindex].myc = 100
-			elseif self.mouseaction == 3 then
-				field[fieldindex].fert = field[fieldindex].fert +.5
-				if field[fieldindex].fert > 1 then
-					field[fieldindex].fert = 1
+		if mouseB and mytimer > 2.1 then
+			if mx < 992 then
+				fieldindex=(math.floor(my/32))*31+(math.floor(mx/32)+1)
+				mytimer = 0
+				if self.mouseaction == 1 then
+					if seeds > 0 then
+						field[fieldindex].myc = 50
+						seeds = seeds - 1
+					end
+				elseif self.mouseaction == 3 then
+					if fertnum > 0 and field[fieldindex].fert < 0.95 then
+						audio.fertsound:play()
+						field[fieldindex].fert = 1
+						fertnum = fertnum - 1 
+					end
+				elseif self.mouseaction == 2 then
+					if waternum > 0 and field[fieldindex].water < 0.95 then
+						--print("water")
+						audio.bucketsound:play()
+						field[fieldindex].water = 1
+						waternum = waternum - 1
+					end 
+				elseif self.mouseaction == 4 then
+					audio.hoesound:play()
+					if field[fieldindex].soilqual == 0.8 then
+						field[fieldindex].soilqual = 1.
+					elseif field[fieldindex].soilqual == 0.5 then
+						field[fieldindex].soilqual = .7
+					end
+				elseif self.mouseaction == 5 then
+					print(field[fieldindex].nummush)
+				elseif self.mouseaction == 6 then
+					audio.sythesound:play()
+					for k=1, field[fieldindex].nummush do
+						if field[fieldindex].mushroom[k].growth >= 60 then
+							score = score + 1
+							totalscore = totalscore + 1
+						end
+					end
+					field[fieldindex].nummush = 0
+					field[fieldindex].mushroom = {}
 				end
-			elseif self.mouseaction == 2 then
-				field[fieldindex].water = 1
-			elseif self.mouseaction == 4 then
-				if field[fieldindex].soilqual == 0.8 then
-					field[fieldindex].soilqual = 1.
-				elseif field[fieldindex].soilqual == 0.5 then
-					field[fieldindex].soilqual = .7
+			elseif my < 391 then
+				if (mx >= 1072 and mx < 1136) and (my >= 220 and my < 284) then
+					actions.till = true
+					mouseswitch = true
+				elseif (mx >= 1136 and mx <= 1200) and (my >= 220 and my < 284) then
+					actions.harvest = true
+					mouseswitch = true
+				elseif (mx >= 1072 and mx < 1136) and (my >= 284 and my < 348) then
+					actions.fertilize = true
+					mouseswitch = true
+				elseif (mx >=1136 and mx <= 1200) and (my >= 284 and my < 348) then
+					actions.water = true
+					mouseswitch = true
 				end
-			elseif self.mouseaction == 5 then
-				print(field[fieldindex].nummush)
-			elseif self.mouseaction == 6 then
-				score=score + field[fieldindex].nummush
-				field[fieldindex].nummush=0
-				field[fieldindex].mushroom={}
+
+			elseif my >= 392 then
+				if (mx > 992+144-64 and mx < 992 + 144) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
+					score = score - 1
+					fertnum = fertnum + 3
+					pastgametime = gameTime
+				elseif (mx >= 992+144 and mx <992+144+64) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
+					score = score - 1
+					waternum = waternum + 5
+					pastgametime = gameTime
+				end 
+				--print(mx.." "..my)
 			end
 		end
 	end
@@ -257,12 +325,20 @@ game={
 		love.graphics.draw(sidebar.sythe,992+144,220)
 		love.graphics.draw(sidebar.fertbag,992+144-64,220+64)
 		love.graphics.draw(sidebar.bucket,992+144,220+64)
+		love.graphics.draw(sidebar.fertbag,992+144-64,392)
+		love.graphics.draw(sidebar.bucket,992+144,392)
+		love.graphics.setColor(0,0,0,1)
+		love.graphics.print(tostring(score), 992+180, 115, 0, 1.9, 1.9)
+		love.graphics.print(tostring(seeds), 992+155, 150, 0, 1.9, 1.9)
+		love.graphics.print(tostring(waternum), 992+144+48, 220+64+48)
+		love.graphics.print(tostring(fertnum),992+144-16,220+64+48)
+		love.graphics.setColor(1,1,1,0.9)
 		n = 0
 		for y=0, window.height do
         	for x=0, window.width do
             	if y%32 == 0 and x%32==0 and x < 992 then
             		n=n+1
-            		love.graphics.setColor(1,1,1,0.9)
+            		--love.graphics.setColor(1,1,1,0.9)
                 	love.graphics.rectangle("line", x, y, 32, 32)
                 	watervalue = field[n].water
                 	if watervalue < 0 then
@@ -322,7 +398,17 @@ game={
                 	end
 
                 	if field[n].myc > 90 then
-                		love.graphics.draw(myceltiles.adultmycel,x,y)
+                		color = false
+                		for k = 1, field[n].nummush do
+                			if field[n].mushroom[k].growth > 60 then
+                				color = true
+                			end
+                		end
+                		if color then
+                			love.graphics.draw(myceltiles.grownmycel,x,y)
+                		else
+							love.graphics.draw(myceltiles.adultmycel,x,y)
+						end
                 	elseif field[n].myc > 50 then
                 		love.graphics.draw(myceltiles.teenmycel,x,y)
                 	elseif field[n].myc > 10 then
@@ -353,7 +439,7 @@ game={
                 			elseif field[n].mushroom[k].growth <= 100 then
                 				if k == 1 then
                 					love.graphics.draw(mushtiles.adultmush,x,y)
-                				elseif key == 2 then
+                				elseif k == 2 then
                 					love.graphics.draw(mushtiles.adultmush,x+16,y)
                 				elseif k == 3 then
                 					love.graphics.draw(mushtiles.adultmush,x+8,y+16)

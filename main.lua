@@ -100,7 +100,13 @@ end
 
 score=0
 
+totalscore=0
+
 myTimer=0
+
+mouseswitch = true
+
+coptimer = dt
 
 function love.update(dt)
   gameTime = gameTime + 1
@@ -111,16 +117,24 @@ function love.update(dt)
   	myTimer=myTimer-2
   end
   
+  GS.update(dt)
+
   -- Actions
+  
   actions.pause = keyp.p or keyp.escape
   actions.start = keyp["return"] or keyp.kpenter or keyp.space
   
-  actions.seed = keyp.a
-  actions.water = keyp.s
-  actions.fertilize = keyp.d
-  actions.till = keyp.f
-  actions.info = keyp.g
-  actions.harvest = keyp.h
+  if not mouseswitch then
+  	actions.seed = keyp.a
+  	actions.water = keyp.s
+  	actions.fertilize = keyp.d
+  	actions.till = keyp.f
+  	actions.info = keyp.g
+  	actions.harvest = keyp.h
+  else
+  	mouseswitch = false
+	end
+
   
   -- Up/Down measurement
   --  0 is none, 1 is down, -1 is up
@@ -135,7 +149,7 @@ function love.update(dt)
   actions.skip = #keys(keyp) > 0
   
   -- Update our game function
-  GS.update(dt)
+  
   
   -- Reset keypresses
   keyp = {}
