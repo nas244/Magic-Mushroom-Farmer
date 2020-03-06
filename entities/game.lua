@@ -50,6 +50,7 @@ sidebar = {
 	hoe = love.graphics.newImage("assets/tools/hoe.png"),
 	fertbag = love.graphics.newImage("assets/tools/fertbag.png"),
 	bucket = love.graphics.newImage("assets/tools/bucket.png"),
+	cops = love.graphics.newImage("assets/menu/Cops.png")
 }
 
 audio = {
@@ -68,7 +69,7 @@ mytimer = 0
 
 
 game={
-	enter = function(self)
+	enter = function(self,dt)
 		self.paused = false
 		n = 0
 		self.mouseaction = 1
@@ -82,6 +83,8 @@ game={
 		pastgametime = 0
 		audio.soundtrack:setLooping(true)
 		audio.soundtrack:play()
+		copsarrive = false
+
 		--Sidebar = sidebar()
 		for y=0, window.height do
 			for x=0, window.width do
@@ -101,7 +104,7 @@ game={
 				end
 			end
 		end
-		print(n)
+		--print(n)
 	end,
 
 	leave=function (self)
@@ -239,77 +242,94 @@ game={
 				end
 			end
 		end
+
+		if coptimer < timer  then
+			if totalscore > 10 then
+				copsarrive = true
+			end
+			coptimer = love.math.random(60,75)
+			timer = 0
+		end
 		
 		mytimer=mytimer + dt
 
-		if mouseB and mytimer > 2.1 then
-			if mx < 992 then
-				fieldindex=(math.floor(my/32))*31+(math.floor(mx/32)+1)
-				mytimer = 0
-				if self.mouseaction == 1 then
-					if seeds > 0 then
-						field[fieldindex].myc = 50
-						seeds = seeds - 1
-					end
-				elseif self.mouseaction == 3 then
-					if fertnum > 0 and field[fieldindex].fert < 0.95 then
-						audio.fertsound:play()
-						field[fieldindex].fert = 1
-						fertnum = fertnum - 1 
-					end
-				elseif self.mouseaction == 2 then
-					if waternum > 0 and field[fieldindex].water < 0.95 then
-						--print("water")
-						audio.bucketsound:play()
-						field[fieldindex].water = 1
-						waternum = waternum - 1
-					end 
-				elseif self.mouseaction == 4 then
-					audio.hoesound:play()
-					if field[fieldindex].soilqual == 0.8 then
-						field[fieldindex].soilqual = 1.
-					elseif field[fieldindex].soilqual == 0.5 then
-						field[fieldindex].soilqual = .7
-					end
-				elseif self.mouseaction == 5 then
-					print(field[fieldindex].nummush)
-				elseif self.mouseaction == 6 then
-					audio.sythesound:play()
-					for k=1, field[fieldindex].nummush do
-						if field[fieldindex].mushroom[k].growth >= 60 then
-							score = score + 1
-							totalscore = totalscore + 1
+		if mouseB and mytimer > 1 then
+			if not copsarrive then
+				if mx < 992 then
+					fieldindex=(math.floor(my/32))*31+(math.floor(mx/32)+1)
+					mytimer = 0
+					if self.mouseaction == 1 then
+						if seeds > 0 then
+							field[fieldindex].myc = 50
+							seeds = seeds - 1
 						end
+					elseif self.mouseaction == 3 then
+						if fertnum > 0 and field[fieldindex].fert < 0.95 then
+							audio.fertsound:play()
+							field[fieldindex].fert = 1
+							fertnum = fertnum - 1 
+						end
+					elseif self.mouseaction == 2 then
+						if waternum > 0 and field[fieldindex].water < 0.95 then
+							--print("water")
+							audio.bucketsound:play()
+							field[fieldindex].water = 1
+							waternum = waternum - 1
+						end 
+					elseif self.mouseaction == 4 then
+						audio.hoesound:play()
+						if field[fieldindex].soilqual == 0.8 then
+							field[fieldindex].soilqual = 1.
+						elseif field[fieldindex].soilqual == 0.5 then
+							field[fieldindex].soilqual = .7
+						end
+					elseif self.mouseaction == 5 then
+						print(field[fieldindex].nummush)
+					elseif self.mouseaction == 6 then
+						audio.sythesound:play()
+						for k=1, field[fieldindex].nummush do
+							if field[fieldindex].mushroom[k].growth >= 60 then
+								score = score + 1
+								totalscore = totalscore + 1
+							end
+						end
+						field[fieldindex].nummush = 0
+						field[fieldindex].mushroom = {}
 					end
-					field[fieldindex].nummush = 0
-					field[fieldindex].mushroom = {}
-				end
-			elseif my < 391 then
-				if (mx >= 1072 and mx < 1136) and (my >= 220 and my < 284) then
-					actions.till = true
-					mouseswitch = true
-				elseif (mx >= 1136 and mx <= 1200) and (my >= 220 and my < 284) then
-					actions.harvest = true
-					mouseswitch = true
-				elseif (mx >= 1072 and mx < 1136) and (my >= 284 and my < 348) then
-					actions.fertilize = true
-					mouseswitch = true
-				elseif (mx >=1136 and mx <= 1200) and (my >= 284 and my < 348) then
-					actions.water = true
-					mouseswitch = true
-				end
+				elseif my < 391 then
+					if (mx >= 1072 and mx < 1136) and (my >= 220 and my < 284) then
+						actions.till = true
+						mouseswitch = true
+					elseif (mx >= 1136 and mx <= 1200) and (my >= 220 and my < 284) then
+						actions.harvest = true
+						mouseswitch = true
+					elseif (mx >= 1072 and mx < 1136) and (my >= 284 and my < 348) then
+						actions.fertilize = true
+							mouseswitch = true
+					elseif (mx >=1136 and mx <= 1200) and (my >= 284 and my < 348) then
+						actions.water = true
+						mouseswitch = true
+					end
 
-			elseif my >= 392 then
-				if (mx > 992+144-64 and mx < 992 + 144) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
-					score = score - 1
-					fertnum = fertnum + 3
-					pastgametime = gameTime
-				elseif (mx >= 992+144 and mx <992+144+64) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
-					score = score - 1
-					waternum = waternum + 5
-					pastgametime = gameTime
-				end 
+				elseif my >= 392 then
+					if (mx > 992+144-64 and mx < 992 + 144) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
+						score = score - 1
+						fertnum = fertnum + 3
+						pastgametime = gameTime
+					elseif (mx >= 992+144 and mx <992+144+64) and (my >= 392 and my < 392+65) and score > 0 and gameTime-5 > pastgametime then
+						score = score - 1
+						waternum = waternum + 5
+						pastgametime = gameTime
+					end 
 				--print(mx.." "..my)
+				end
+			else 
+				if (mx >= 70 + 256 and mx <= 221 + 256) and (my >= 333+96 and my <= 419+96) and score >= math.floor(totalscore*0.25) then
+					score = score - math.floor(totalscore*0.25)
+					copsarrive = false
+				elseif (mx >= 269 + 256 and mx <= 420 + 256) and (my >= 333+96 and my <= 419+96) then
+					love.event.push("quit")
+				end
 			end
 		end
 	end
@@ -334,7 +354,9 @@ game={
 		love.graphics.print(tostring(seeds), 992+155, 150, 0, 1.9, 1.9)
 		love.graphics.print(tostring(waternum), 992+144+48, 220+64+48)
 		love.graphics.print(tostring(fertnum),992+144-16,220+64+48)
-		love.graphics.setColor(1,1,1,0.9)
+		love.graphics.setColor(1,1,1,1)
+		
+
 		n = 0
 		for y=0, window.height do
         	for x=0, window.width do
@@ -453,7 +475,14 @@ game={
 
             	end
         	end
-    	--Sidebar:draw()
+        if copsarrive == true then
+        	love.graphics.setColor(1,1,1,1)
+        	love.graphics.draw(sidebar.cops,256,96)
+        	love.graphics.setColor(0,0,0,1)
+        	love.graphics.print(tostring(math.floor(totalscore*0.25)),256+167,93+394)
+        	love.graphics.setColor(1,1,1,.9)
+        end
+
     	end
 
     end

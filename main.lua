@@ -92,6 +92,7 @@ function love.load()
   gameTime = 0
 
   --Gamestate options
+	
 
   game = require "entities.game"
 
@@ -106,16 +107,17 @@ myTimer=0
 
 mouseswitch = true
 
-coptimer = dt
+coptimer = 0
+timer = 0
 
 function love.update(dt)
   gameTime = gameTime + 1
 
-  myTimer=myTimer+dt
-  if myTimer > 5 then 
-  	print(score) 
-  	myTimer=myTimer-2
+  if coptimer == 0 then
+  	coptimer = love.math.random(60,75)
   end
+
+  timer = timer + dt
   
   GS.update(dt)
 
