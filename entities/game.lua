@@ -56,7 +56,8 @@ audio = {
 	sythesound = love.audio.newSource("assets/audio/sythe.mp3","static"),
 	bucketsound = love.audio.newSource("assets/audio/bucket.mp3","static"),
 	fertsound = love.audio.newSource("assets/audio/fert.mp3","static"),
-	hoesound = love.audio.newSource("assets/audio/dig.mp3","static")
+	hoesound = love.audio.newSource("assets/audio/dig.mp3","static"),
+	soundtrack = love.audio.newSource("assets/audio/track.mp3","static")
 }
 
 
@@ -79,7 +80,8 @@ game={
 		fertnum = 9
 		seeds = 1
 		pastgametime = 0
-
+		audio.soundtrack:setLooping(true)
+		audio.soundtrack:play()
 		--Sidebar = sidebar()
 		for y=0, window.height do
 			for x=0, window.width do
